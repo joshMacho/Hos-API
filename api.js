@@ -23,14 +23,48 @@ router.route("/Employees").get((request, response) => {
   });
 });
 
+router.route("/getconsults").get((request, response) => {
+  db.getConsults().then((result) => {
+    response.json(result);
+  });
+});
+
+router.route("/updatepatient/:id").put((request, response) => {
+  db.updatePatient(request, response);
+});
+
+router.route("/doctors").get((request, response) => {
+  db.getEmployees().then((result) => {
+    response.json(result);
+  });
+});
+
 router.route("/types").get((request, response) => {
   db.getTypes().then((results) => {
     response.json(results);
   });
 });
 
+router.route("/patients").get((request, response) => {
+  db.getPatients().then((results) => {
+    response.json(results);
+  });
+});
+
 router.route("/insertEmp").post((request, response) => {
   db.addEmployee(request, response);
+});
+
+router.route("/addPatient").post((request, response) => {
+  db.addPatient(request, response);
+});
+
+router.route("/addConsultations").post((request, response) => {
+  db.addConsultation(request, response);
+});
+
+router.route("/updatePassword/:id").put((request, response) => {
+  db.updatePassword(request, response);
 });
 
 var port = process.env.port || 8090;
