@@ -1,3 +1,4 @@
+const { response } = require("express");
 var config = require("./dbconfig");
 const sql = require("mssql");
 
@@ -59,7 +60,6 @@ const updatePassword = async (request, response) => {
     const { id } = params;
     const { password } = body;
 
-    console.log("check the param: ", params);
     let pool = await sql.connect(config);
     let update = await pool
       .request()
@@ -84,6 +84,19 @@ const updatePassword = async (request, response) => {
   }
 };
 
+const getPatient = async (patientID) => {
+  try {
+    let pool = await sql.connect(config);
+    let patient = await pool
+      .request()
+      .input("id", sql.Int, patientID)
+      .query("Select * from patient where id=@id");
+    return patient.recordset;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 const updatePatient = async (request, response) => {
   try {
     const { params, body } = request;
@@ -91,12 +104,13 @@ const updatePatient = async (request, response) => {
     const {
       name,
       email,
-      gender,
+      sex,
       contact,
       dob,
       marital_status,
       address,
       next_of_kin,
+      nID,
     } = body;
     let pool = await sql.connect(config);
     let insert = await pool
@@ -105,13 +119,14 @@ const updatePatient = async (request, response) => {
       .input("name", sql.NVarChar, body.name)
       .input("contact", sql.NVarChar, body.contact)
       .input("email", sql.NVarChar, body.email)
-      .input("gender", sql.NVarChar, body.gender)
+      .input("gender", sql.NVarChar, body.sex)
       .input("dob", sql.NVarChar, body.dob)
       .input("m_status", sql.NVarChar, body.marital_status)
       .input("next_of", sql.NVarChar, body.next_of_kin)
       .input("address", sql.NVarChar, body.address)
+      .input("nID", sql.NVarChar, body.nID)
       .query(
-        "UPDATE patient SET name=@name, email=@email, contact=@contact, sex=@gender, dob=@dob, address=@address, marital_status=@m_status, next_of_kin=@next_of WHERE id=@id"
+        "UPDATE patient SET name=@name, email=@email, contact=@contact, sex=@gender, dob=@dob, address=@address, marital_status=@m_status, next_of_kin=@next_of, nID=@nID WHERE id=@id"
       );
     response
       .status(200)
@@ -121,6 +136,34 @@ const updatePatient = async (request, response) => {
     response
       .status(500)
       .json({ successful: false, message: "Internal Server Error" });
+  }
+};
+
+const updateEmployee = async (request, response) => {
+  try {
+    const { params, body } = request;
+    const { id } = params;
+    const { name, type, contact, email, username } = body;
+    let pool = await sql.connect(config);
+    let upd = await pool
+      .request()
+      .input("id", sql.Int, id)
+      .input("name", sql.NVarChar, body.name)
+      .input("type", sql.NVarChar, body.type)
+      .input("contact", sql.NVarChar, body.contact)
+      .input("email", sql.NVarChar, body.email)
+      .input("username", sql.NVarChar, body.username)
+      .query(
+        "UPDATE employees SET name=@name, type=@type, contact=@contact,email=@email,username=@username WHERE id=@id"
+      );
+    response
+      .status(200)
+      .json({ successful: true, message: "User updated Successfully" });
+  } catch (error) {
+    console.log(error);
+    response
+      .status(500)
+      .json({ succcessful: false, message: "Internal Server Error" });
   }
 };
 
@@ -157,12 +200,13 @@ const addPatient = async (request, response) => {
     const {
       name,
       email,
-      gender,
+      sex,
       contact,
       dob,
-      m_status,
+      marital_status,
       address,
       next_of_kin,
+      nID,
     } = body;
     let pool = await sql.connect(config);
     let insert = await pool
@@ -175,8 +219,9 @@ const addPatient = async (request, response) => {
       .input("m_status", sql.NVarChar, body.m_status)
       .input("next_of", sql.NVarChar, body.next_of_kin)
       .input("address", sql.NVarChar, body.address)
+      .input("nID", sql.NVarChar, body.nID)
       .query(
-        "INSERT INTO patient (name, email, contact, sex ,dob, address, marital_status,next_of_kin) Values(@name, @email, @contact, @gender, @dob, @address, @m_status, @next_of)"
+        "INSERT INTO patient (name, email, contact, sex ,dob, address, marital_status,next_of_kin,nID) Values(@name, @email, @contact, @gender, @dob, @address, @m_status, @next_of, @nID)"
       );
     response
       .status(200)
@@ -192,6 +237,7 @@ const addPatient = async (request, response) => {
 const addConsultation = async (request, response) => {
   try {
     const { body } = request;
+    console.log(body);
     const {
       patient,
       patient_id,
@@ -202,6 +248,7 @@ const addConsultation = async (request, response) => {
       weight,
       heart_rate,
     } = body;
+
     let pool = await sql.connect(config);
     let insert = await pool
       .request()
@@ -212,18 +259,33 @@ const addConsultation = async (request, response) => {
       .input("temperature", sql.NVarChar, body.temperature)
       .input("weight", sql.NVarChar, body.weight)
       .input("heart_rate", sql.NVarChar, body.heart_rate)
-      .input("patient_id", sql.NVarChar, body.patient_id)()
+      .input("patient_id", sql.Int, body.patient_id)
       .query(
         "INSERT INTO consultation (doctor_assigned, consultation, patient_name, patient_id ,temperature, weight, heart_rate, pulse) Values(@doctor,@consultation_room,@patient,@patient_id,@temperature,@weight,@heart_rate,@pulse)"
       );
+
     response
       .status(200)
-      .json({ succesful: true, message: "Data inserted successfully" });
+      .json({ succesful: true, message: "Consultation Sent" });
   } catch (error) {
     console.log(error);
+    /*
     response
       .status(500)
-      .json({ successful: false, message: "Internal Server Error" });
+      .json({ successful: false, message: "Internal Server Error" });*/
+  }
+};
+
+const getConsult = async (consultID) => {
+  try {
+    let pool = await sql.connect(config);
+    let patient = await pool
+      .request()
+      .input("id", sql.Int, consultID)
+      .query("Select * from consultation where id=@id");
+    return patient.recordset;
+  } catch (error) {
+    console.log(error);
   }
 };
 
@@ -238,4 +300,7 @@ module.exports = {
   addConsultation: addConsultation,
   updatePatient: updatePatient,
   getConsults: getConsults,
+  getPatient: getPatient,
+  updateEmployee: updateEmployee,
+  getConsult: getConsult,
 };

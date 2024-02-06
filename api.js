@@ -59,12 +59,28 @@ router.route("/addPatient").post((request, response) => {
   db.addPatient(request, response);
 });
 
+router.route("/getpatient/:id").get((request, response) => {
+  db.getPatient(request.params.id).then((result) => {
+    response.json(result[0]);
+  });
+});
+
+router.route("/getConsult/:id").get((request, response) => {
+  db.getConsult(request.params.id).then((result) => {
+    response.json(result[0]);
+  });
+});
+
 router.route("/addConsultations").post((request, response) => {
   db.addConsultation(request, response);
 });
 
 router.route("/updatePassword/:id").put((request, response) => {
   db.updatePassword(request, response);
+});
+
+router.route("/updateEmployee/:id").put((request, response) => {
+  db.updateEmployee(request, response);
 });
 
 var port = process.env.port || 8090;
