@@ -1,6 +1,8 @@
 const { response } = require("express");
 var config = require("./dbconfig");
 const sql = require("mssql");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 async function getEmployees() {
   try {
@@ -168,10 +170,12 @@ const updateEmployee = async (request, response) => {
 };
 
 const addEmployee = async (request, response) => {
+  const { body } = request;
+  const { name, type, contact, email, username, password } = body;
   try {
-    const { body } = request;
-    const { name, type, contact, email, username, password } = body;
     let pool = await sql.connect(config);
+    const hasedPassword = await bcrypt.hash(password, 10);
+
     let insert = await pool
       .request()
       .input("name", sql.NVarChar, body.name)
@@ -179,7 +183,7 @@ const addEmployee = async (request, response) => {
       .input("contact", sql.NVarChar, body.contact)
       .input("email", sql.NVarChar, body.email)
       .input("username", sql.NVarChar, body.username)
-      .input("password", sql.NVarChar, body.password)
+      .input("password", sql.NVarChar, hasedPassword)
       .query(
         "INSERT INTO employees (name, type, contact, email ,username, password) Values(@name, @type, @contact, @email, @username, @password)"
       );
@@ -237,7 +241,6 @@ const addPatient = async (request, response) => {
 const addConsultation = async (request, response) => {
   try {
     const { body } = request;
-    console.log(body);
     const {
       patient,
       patient_id,
@@ -289,6 +292,34 @@ const getConsult = async (consultID) => {
   }
 };
 
+const login = async (request, response) => {
+  const { username, password } = request.body;
+
+  try {
+    let pool = await sql.connect(config);
+    const results = await pool
+      .request()
+      .input("username", sql.NVarChar, username)
+      .query("SELECT * FROM Employees where username=@username");
+
+    const user = results.recordset[0];
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      response.status(401).json({ message: "Invalid username or password" });
+    }
+
+    const token = jwt.sign(
+      { id: user.id, username: user.username },
+      "secret_key",
+      { expiresIn: "1h" }
+    );
+    response.json({ token });
+  } catch (error) {
+    response
+      .status(500)
+      .json({ status: "failed", message: "Internal Server Error" });
+  }
+};
+
 module.exports = {
   getEmployees: getEmployees,
   getTypes: getTypes,
@@ -303,4 +334,5 @@ module.exports = {
   getPatient: getPatient,
   updateEmployee: updateEmployee,
   getConsult: getConsult,
+  login: login,
 };

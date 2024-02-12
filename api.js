@@ -83,6 +83,10 @@ router.route("/updateEmployee/:id").put((request, response) => {
   db.updateEmployee(request, response);
 });
 
+router.route("/login").post((request, response) => {
+  db.login(request, response);
+});
+
 var port = process.env.port || 8090;
 app.listen(port);
 console.log("Hospital API is running at " + port);
