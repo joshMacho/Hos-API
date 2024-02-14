@@ -1,5 +1,7 @@
 const db = require("./dbOperations");
 var Employees = require("./employees");
+const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
 
 var express = require("express");
 var bodyParser = require("body-parser");
@@ -9,12 +11,44 @@ var router = express.Router();
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-app.use(cors());
+app.use(
+  cors({
+    origin: ["http://localhost:5173"],
+    //methods: ["POST", "GET"],
+    credentials: true,
+  })
+);
+app.use(cookieParser());
 app.use("/api", router);
 
 //middle ware
-router.use((request, responde, next) => {
-  next();
+const verifyToken = (request, response, next) => {
+  const token = request.cookies.session_token;
+  console.log(request.cookies);
+
+  if (!token) {
+    return response
+      .status(401)
+      .json({ message: "Unauthorized: No token provided" });
+  }
+
+  jwt.verify(token, "macho_monei", (err, decoded) => {
+    if (err) {
+      return response
+        .status(401)
+        .json({ message: "Unauthorized: Invalid token" });
+    }
+
+    // Token is valid, attach user data to request object
+    request.user = decoded;
+    next();
+  });
+};
+
+router.route("/validate").get(verifyToken, (request, response) => {
+  // If middleware reaches this point, token is valid
+  response.json({ message: "Successful", user: request.user });
+  console.log("user - ", request.user);
 });
 
 router.route("/Employees").get((request, response) => {
@@ -83,8 +117,34 @@ router.route("/updateEmployee/:id").put((request, response) => {
   db.updateEmployee(request, response);
 });
 
-router.route("/login").post((request, response) => {
-  db.login(request, response);
+router.route("/login").post(async (request, response) => {
+  try {
+    const token = await db.login(request, response);
+    if (token) {
+      //response.cookie("token", token, { maxAge: 3600000 }); // Setting cookie named 'token' with the JWT token and expiry time of 1 hour (3600000 milliseconds)
+      jwt.verify(token, "macho_monei", (error, decoded) => {
+        if (error) {
+          return response.json({ message: "Authentication Error" });
+        } else {
+          //response.cookie("session_token", token, { httpOnly: true });
+          response.status(200).json(decoded.type);
+        }
+      });
+    } else {
+      response.status(401).json({ message: "Invalid username or password" });
+    }
+  } catch (error) {
+    response
+      .status(500)
+      .json({ status: "failed", message: "Internal Server Error" });
+  }
+});
+
+// Endpoint to handle user logout
+router.route("/logout").get((req, res) => {
+  // Clear token cookie
+  res.clearCookie("session_token");
+  res.json({ message: "Logout successful" });
 });
 
 var port = process.env.port || 8090;

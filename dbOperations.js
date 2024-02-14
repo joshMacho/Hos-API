@@ -57,19 +57,21 @@ const getConsults = async () => {
 };
 
 const updatePassword = async (request, response) => {
-  try {
-    const { params, body } = request;
-    const { id } = params;
-    const { password } = body;
+  const { params, body } = request;
+  const { id } = params;
+  const { password } = body;
 
+  try {
     let pool = await sql.connect(config);
+    const hasedPassword = await bcrypt.hash(password, 10);
     let update = await pool
       .request()
       .input("id", sql.Int, id)
-      .input("password", sql.NVarChar, password)
+      .input("password", sql.NVarChar, hasedPassword)
       .query("UPDATE employees SET password = @password WHERE id = @id");
 
     if (update.rowsAffected[0] > 0) {
+      console.log("the password: ", password);
       response
         .status(200)
         .json({ successful: true, message: "Password updated successfully" });
@@ -304,19 +306,26 @@ const login = async (request, response) => {
 
     const user = results.recordset[0];
     if (!user || !(await bcrypt.compare(password, user.password))) {
-      response.status(401).json({ message: "Invalid username or password" });
+      return null; // Return null if username/password is invalid
     }
 
     const token = jwt.sign(
-      { id: user.id, username: user.username },
-      "secret_key",
+      {
+        id: user.id,
+        name: user.name,
+        username: user.username,
+        type: user.type,
+      },
+      "macho_monei",
       { expiresIn: "1h" }
     );
-    response.json({ token });
+    response.cookie("session_token", token, { httpOnly: true });
+    return token; // Return the generated JWT token
   } catch (error) {
     response
       .status(500)
       .json({ status: "failed", message: "Internal Server Error" });
+    throw error; // Re-throwing error for further handling if needed
   }
 };
 
