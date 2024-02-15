@@ -1,5 +1,4 @@
 const db = require("./dbOperations");
-var Employees = require("./employees");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
 
