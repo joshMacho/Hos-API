@@ -23,7 +23,6 @@ app.use("/api", router);
 //middle ware
 const verifyToken = (request, response, next) => {
   const token = request.cookies.session_token;
-  console.log(request.cookies);
 
   if (!token) {
     return response
@@ -47,7 +46,6 @@ const verifyToken = (request, response, next) => {
 router.route("/validate").get(verifyToken, (request, response) => {
   // If middleware reaches this point, token is valid
   response.json({ message: "Successful", user: request.user });
-  console.log("user - ", request.user);
 });
 
 router.route("/Employees").get((request, response) => {
@@ -126,7 +124,7 @@ router.route("/login").post(async (request, response) => {
           return response.json({ message: "Authentication Error" });
         } else {
           //response.cookie("session_token", token, { httpOnly: true });
-          response.status(200).json(decoded.type);
+          response.status(200).json(decoded);
         }
       });
     } else {
