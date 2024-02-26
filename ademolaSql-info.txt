@@ -1,0 +1,3 @@
+rockylinux-s-2vcpu-4gb-lon1-01 sqlservr[1480370]
+username: sa
+password: Admin@123
