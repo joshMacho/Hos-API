@@ -187,7 +187,7 @@ const addEmployee = async (request, response) => {
       .input("username", sql.NVarChar, body.username)
       .input("password", sql.NVarChar, hasedPassword)
       .query(
-        "INSERT INTO employees (name, type, contact, email ,username, password) Values(@name, @type, @contact, @email, @username, @password)"
+        "INSERT INTO Employees (name, type, contact, email ,username, password) Values(@name, @type, @contact, @email, @username, @password)"
       );
     response
       .status(200)
