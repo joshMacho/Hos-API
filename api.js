@@ -123,7 +123,7 @@ router.route("/login").post(async (request, response) => {
         if (error) {
           return response.json({ message: "Authentication Error" });
         } else {
-          //response.cookie("session_token", token, { httpOnly: true });
+          response.cookie("session_token", token, { httpOnly: true });
           response.status(200).json(decoded);
         }
       });
