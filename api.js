@@ -25,7 +25,7 @@ const verifyToken = (request, response, next) => {
   const token = request.cookies.session_token;
 
   if (!token) {
-    console.log(err);
+    console.log("no token provided");
     return response
       .status(401)
       .json({ message: "Unauthorized: No token provided" });
@@ -33,7 +33,7 @@ const verifyToken = (request, response, next) => {
 
   jwt.verify(token, "macho_monei", (err, decoded) => {
     if (err) {
-      console.log(err);
+      console.log(err.message);
       return response
         .status(401)
         .json({ message: "Unauthorized: Invalid token" });
