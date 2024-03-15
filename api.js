@@ -118,19 +118,21 @@ router.route("/updateEmployee/:id").put((request, response) => {
 
 router.route("/login").post(async (request, response) => {
   try {
-    const token = await db.login(request, response);
+    const token = await db.login(request, response); // Assuming this function returns the token or null
+    console.log(request.body);
     if (token) {
-      //response.cookie("token", token, { maxAge: 3600000 }); // Setting cookie named 'token' with the JWT token and expiry time of 1 hour (3600000 milliseconds)
       jwt.verify(token, "macho_monei", (error, decoded) => {
         if (error) {
-          return response.json({ message: "Authentication Error" });
+          return response.status(401).json({ message: "Authentication Error" });
         } else {
           response.cookie("session_token", token, { httpOnly: true });
-          response.status(200).json(decoded);
+          return response.status(200).json(decoded);
         }
       });
     } else {
-      response.status(401).json({ message: "Invalid username or password" });
+      return response
+        .status(401)
+        .json({ message: "Invalid username or password" });
     }
   } catch (error) {
     response

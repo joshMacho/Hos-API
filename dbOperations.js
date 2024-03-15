@@ -59,7 +59,7 @@ const getConsults = async () => {
 const updatePassword = async (request, response) => {
   const { params, body } = request;
   const { id } = params;
-  const { password } = body;
+  const { password, firstSignIn } = body;
 
   try {
     let pool = await sql.connect(config);
@@ -67,8 +67,11 @@ const updatePassword = async (request, response) => {
     let update = await pool
       .request()
       .input("id", sql.Int, id)
+      .input("firstSignIn", sql.Bit, firstSignIn)
       .input("password", sql.NVarChar, hasedPassword)
-      .query("UPDATE employees SET password = @password WHERE id = @id");
+      .query(
+        "UPDATE employees SET password = @password, firstSignIn = @firstSignIn WHERE id = @id"
+      );
 
     if (update.rowsAffected[0] > 0) {
       console.log("the password: ", password);
@@ -315,6 +318,7 @@ const login = async (request, response) => {
         name: user.name,
         username: user.username,
         type: user.type,
+        firstSignIn: user.firstSignIn,
       },
       "macho_monei",
       { expiresIn: "1h" }
