@@ -74,7 +74,6 @@ const updatePassword = async (request, response) => {
       );
 
     if (update.rowsAffected[0] > 0) {
-      console.log("the password: ", password);
       response
         .status(200)
         .json({ successful: true, message: "Password updated successfully" });
@@ -312,24 +311,26 @@ const login = async (request, response) => {
       return null; // Return null if username/password is invalid
     }
 
-    const token = jwt.sign(
-      {
-        id: user.id,
-        name: user.name,
-        username: user.username,
-        type: user.type,
-        firstSignIn: user.firstSignIn,
-      },
-      "macho_monei",
-      { expiresIn: "1h" }
-    );
-    response.cookie("session_token", token, { httpOnly: true });
-    return token; // Return the generated JWT token
+    // const token = jwt.sign(
+    //   {
+    //     id: user.id,
+    //     name: user.name,
+    //     username: user.username,
+    //     type: user.type,
+    //     firstSignIn: user.firstSignIn,
+    //   },
+    //   "macho_monei",
+    //   { expiresIn: "1h" }
+    // );
+    //response.cookie("session_token", token, { httpOnly: true });
+    //return user; // Return the generated JWT token
+    //response.status(200).json(user);
+    return user;
   } catch (error) {
     response
       .status(500)
       .json({ status: "failed", message: "Internal Server Error" });
-    throw error; // Re-throwing error for further handling if needed
+    //throw error; // Re-throwing error for further handling if needed
   }
 };
 

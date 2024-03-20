@@ -118,27 +118,37 @@ router.route("/updateEmployee/:id").put((request, response) => {
 
 router.route("/login").post(async (request, response) => {
   try {
-    const token = await db.login(request, response); // Assuming this function returns the token or null
-    console.log(request.body);
-    if (token) {
-      jwt.verify(token, "macho_monei", (error, decoded) => {
-        if (error) {
-          return response.status(401).json({ message: "Authentication Error" });
-        } else {
-          response.cookie("session_token", token, { httpOnly: true });
-          return response.status(200).json(decoded);
-        }
-      });
-    } else {
-      return response
-        .status(401)
-        .json({ message: "Invalid username or password" });
-    }
+    const userData = await db.login(request, response);
+    // Handle the user data here
+    //console.log("this is the info", userData);
+    response.status(200).json(userData); // Assuming you want to send the user data back to the client
   } catch (error) {
+    console.error("Error during login:", error);
     response
       .status(500)
       .json({ status: "failed", message: "Internal Server Error" });
   }
+  // try {
+  //   const token = await db.login(request, response);
+  //   console.log(request.body);
+  //   if (token) {
+  //     // jwt.verify(token, "macho_monei", (error, decoded) => {
+  //     //   if (error) {
+  //     //     return response.status(401).json({ message: "Authentication Error" });
+  //     //   } else {
+  //     //     response.cookie("session_token", token, { httpOnly: true });
+  //     //     return response.status(200).json(decoded);
+  //     //   }
+  //     // });
+  //     return response.status(200).json(token);
+  //   } else {
+  //     response.status(401).json({ message: "Invalid username or password" });
+  //   }
+  // } catch (error) {
+  //   response
+  //     .status(500)
+  //     .json({ status: "failed", message: "Internal Server Error" });
+  // }
 });
 
 // Endpoint to handle user logout
