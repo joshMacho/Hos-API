@@ -15,7 +15,7 @@ app.use(
     origin: [
       "http://localhost:3000",
       "https://m-h-s.onrender.com",
-      "https://hospital-project-1fnk.vercel.app/",
+      "https://hospital-project-1fnk.vercel.app",
     ],
     //methods: ["POST", "GET"],
     credentials: true,
