@@ -12,7 +12,11 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(
   cors({
-    origin: ["http://localhost:3000", "https://m-h-s.onrender.com"],
+    origin: [
+      "http://localhost:3000",
+      "https://m-h-s.onrender.com",
+      "https://hospital-project-1fnk-k8t1juww3-joshuas-projects-7e4bbddf.vercel.app",
+    ],
     //methods: ["POST", "GET"],
     credentials: true,
   })
