@@ -56,6 +56,16 @@ const getConsults = async () => {
   }
 };
 
+const getLogs = async () => {
+  try {
+    let pool = await sql.connect(config);
+    let logs = await pool.request().query("SELECT * FROM hospitalLogs");
+    return logs.recordset;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 const updatePassword = async (request, response) => {
   const { params, body } = request;
   const { id } = params;
@@ -175,7 +185,7 @@ const updateEmployee = async (request, response) => {
 
 const addEmployee = async (request, response) => {
   const { body } = request;
-  const { name, type, contact, email, username, password } = body;
+  const { name, type, contact, email, username, password, addedby } = body;
   try {
     let pool = await sql.connect(config);
     const hasedPassword = await bcrypt.hash(password, 10);
@@ -188,8 +198,9 @@ const addEmployee = async (request, response) => {
       .input("email", sql.NVarChar, body.email)
       .input("username", sql.NVarChar, body.username)
       .input("password", sql.NVarChar, hasedPassword)
+      .input("addedby", sql.NVarChar, body.addedby)
       .query(
-        "INSERT INTO Employees (name, type, contact, email ,username, password) Values(@name, @type, @contact, @email, @username, @password)"
+        "INSERT INTO Employees (name, type, contact, email ,username, password, addedby) Values(@name, @type, @contact, @email, @username, @password, @addedby)"
       );
     response
       .status(200)
@@ -199,6 +210,42 @@ const addEmployee = async (request, response) => {
     response
       .status(500)
       .json({ successful: false, message: "Internal Server Error" });
+  }
+};
+
+const deletePat = async (request, response) => {
+  const { params } = request;
+  const { id } = params;
+  try {
+    const pool = await sql.connect(config);
+    const results = await pool
+      .request()
+      .input("id", sql.Int, id)
+      .query("DELETE from patient WHERE id = @id");
+    if (results.rowsAffected[0] === 1) {
+      response.status(200).json({ message: "Successfully deleted patient" });
+    }
+  } catch (error) {
+    console.log(error);
+    response.status(500).json({ message: "Internal Server error" });
+  }
+};
+
+const deleteEmp = async (request, response) => {
+  const { params } = request;
+  const { id } = params;
+  try {
+    const pool = await sql.connect(config);
+    const results = await pool
+      .request()
+      .input("id", sql.Int, id)
+      .query("DELETE from Employees WHERE id = @id");
+    if (results.rowsAffected[0] === 1) {
+      response.status(200).json({ message: "Successfully deleted Employee" });
+    }
+  } catch (error) {
+    console.log(error);
+    response.status(500).json({ message: "Internal Server error" });
   }
 };
 
@@ -215,6 +262,7 @@ const addPatient = async (request, response) => {
       address,
       next_of_kin,
       nID,
+      officer,
     } = body;
     let pool = await sql.connect(config);
     let insert = await pool
@@ -228,8 +276,9 @@ const addPatient = async (request, response) => {
       .input("next_of", sql.NVarChar, body.next_of_kin)
       .input("address", sql.NVarChar, body.address)
       .input("nID", sql.NVarChar, body.nID)
+      .input("officer", sql.NVarChar, body.officer)
       .query(
-        "INSERT INTO patient (name, email, contact, sex ,dob, address, marital_status,next_of_kin,nID) Values(@name, @email, @contact, @gender, @dob, @address, @m_status, @next_of, @nID)"
+        "INSERT INTO patient (name, email, contact, sex ,dob, address, marital_status,next_of_kin,nID,officer) Values(@name, @email, @contact, @gender, @dob, @address, @m_status, @next_of, @nID, @officer)"
       );
     response
       .status(200)
@@ -334,6 +383,28 @@ const login = async (request, response) => {
   }
 };
 
+const logs = async (request, response) => {
+  try {
+    const { body } = request;
+    const { action_event, affected, officer, table_action } = body;
+    let pool = await sql.connect(config);
+    let insert = await pool
+      .request()
+      .input("action", sql.NVarChar, body.action_event)
+      .input("affected", sql.NVarChar, body.affected)
+      .input("officer", sql.NVarChar, body.officer)
+      .input("table", sql.NVarChar, body.table_action)
+      .query(
+        "INSERT INTO hospitalLogs(action_event, affected,officer,table_action) Values(@action,@affected,@officer,@table)"
+      );
+    response.status(200);
+  } catch (error) {
+    console.log(error);
+    response
+      .status(500)
+      .json({ successful: false, message: "Internal server error" });
+  }
+};
 module.exports = {
   getEmployees: getEmployees,
   getTypes: getTypes,
@@ -349,4 +420,8 @@ module.exports = {
   updateEmployee: updateEmployee,
   getConsult: getConsult,
   login: login,
+  logs: logs,
+  getLogs: getLogs,
+  deleteEmp: deleteEmp,
+  deletePat: deletePat,
 };

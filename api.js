@@ -71,7 +71,7 @@ router.route("/updatepatient/:id").put((request, response) => {
 });
 
 router.route("/doctors").get((request, response) => {
-  db.getEmployees().then((result) => {
+  db.getDoctors().then((result) => {
     response.json(result);
   });
 });
@@ -88,8 +88,22 @@ router.route("/patients").get((request, response) => {
   });
 });
 
+router.route("/getLogs").get((request, response) => {
+  db.getLogs().then((results) => {
+    response.json(results);
+  });
+});
+
 router.route("/insertEmp").post((request, response) => {
   db.addEmployee(request, response);
+});
+
+router.route("/deleteEmp/:id").delete((request, response) => {
+  db.deleteEmp(request, response);
+});
+
+router.route("/deletePat/:id").delete((request, response) => {
+  db.deletePat(request, response);
 });
 
 router.route("/addPatient").post((request, response) => {
@@ -110,6 +124,10 @@ router.route("/getConsult/:id").get((request, response) => {
 
 router.route("/addConsultations").post((request, response) => {
   db.addConsultation(request, response);
+});
+
+router.route("/logs").post((request, response) => {
+  db.logs(request, response);
 });
 
 router.route("/updatePassword/:id").put((request, response) => {
