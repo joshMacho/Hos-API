@@ -298,6 +298,7 @@ const addConsultation = async (request, response) => {
       patient,
       patient_id,
       doctor,
+      doc_id,
       consultation_room,
       pulse,
       temperature,
@@ -316,8 +317,9 @@ const addConsultation = async (request, response) => {
       .input("weight", sql.NVarChar, body.weight)
       .input("heart_rate", sql.NVarChar, body.heart_rate)
       .input("patient_id", sql.Int, body.patient_id)
+      .input("doc_id", sql.Int, body.doc_id)
       .query(
-        "INSERT INTO consultation (doctor_assigned, consultation, patient_name, patient_id ,temperature, weight, heart_rate, pulse) Values(@doctor,@consultation_room,@patient,@patient_id,@temperature,@weight,@heart_rate,@pulse)"
+        "INSERT INTO consultation (doctor_assigned, consultation, patient_name, patient_id ,temperature, weight, heart_rate, pulse, doc_id) Values(@doctor,@consultation_room,@patient,@patient_id,@temperature,@weight,@heart_rate,@pulse, @doc_id)"
       );
 
     response
@@ -340,6 +342,19 @@ const getConsult = async (consultID) => {
       .input("id", sql.Int, consultID)
       .query("Select * from consultation where id=@id");
     return patient.recordset;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const getConsultationsfordoctor = async (docid) => {
+  try {
+    let pool = await sql.connect(config);
+    let docConsults = await pool
+      .request()
+      .input("id", sql.NVarChar, docid)
+      .query("SELECT * FROM consultation where doc_id=@id");
+    return docConsults.recordset;
   } catch (error) {
     console.log(error);
   }
@@ -424,4 +439,5 @@ module.exports = {
   getLogs: getLogs,
   deleteEmp: deleteEmp,
   deletePat: deletePat,
+  getConsultationsfordoctor: getConsultationsfordoctor,
 };

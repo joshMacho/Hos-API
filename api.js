@@ -66,6 +66,12 @@ router.route("/getconsults").get((request, response) => {
   });
 });
 
+router.route("/getdocConsults/:id").get((request, response) => {
+  db.getConsultationsfordoctor(request.params.id).then((results) => {
+    response.json(results);
+  });
+});
+
 router.route("/updatepatient/:id").put((request, response) => {
   db.updatePatient(request, response);
 });
