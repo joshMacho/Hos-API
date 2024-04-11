@@ -66,6 +66,16 @@ const getLogs = async () => {
   }
 };
 
+const getDiagnostics = async () => {
+  try {
+    let pool = await sql.connect(config);
+    let diagnostics = await pool.request().query("SELECT * FROM diagnostics");
+    return diagnostics.recordset;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 const updatePassword = async (request, response) => {
   const { params, body } = request;
   const { id } = params;
@@ -440,4 +450,5 @@ module.exports = {
   deleteEmp: deleteEmp,
   deletePat: deletePat,
   getConsultationsfordoctor: getConsultationsfordoctor,
+  getDiagnostics: getDiagnostics,
 };
