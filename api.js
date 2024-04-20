@@ -16,6 +16,7 @@ app.use(
       "http://localhost:3000",
       "https://m-h-s.onrender.com",
       "https://hospital-project-1fnk.vercel.app",
+      "http://138.68.161.4:8090/",
     ],
     //methods: ["POST", "GET"],
     credentials: true,
