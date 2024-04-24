@@ -314,6 +314,7 @@ const addConsultation = async (request, response) => {
       temperature,
       weight,
       heart_rate,
+      visitId,
     } = body;
 
     let pool = await sql.connect(config);
@@ -328,8 +329,9 @@ const addConsultation = async (request, response) => {
       .input("heart_rate", sql.NVarChar, body.heart_rate)
       .input("patient_id", sql.Int, body.patient_id)
       .input("doc_id", sql.Int, body.doc_id)
+      .input("visitId", sql.NVarChar, body.visitId)
       .query(
-        "INSERT INTO consultation (doctor_assigned, consultation, patient_name, patient_id ,temperature, weight, heart_rate, pulse, doc_id) Values(@doctor,@consultation_room,@patient,@patient_id,@temperature,@weight,@heart_rate,@pulse, @doc_id)"
+        "INSERT INTO consultation (doctor_assigned, consultation, patient_name, patient_id ,temperature, weight, heart_rate, pulse, doc_id,visitId) Values(@doctor,@consultation_room,@patient,@patient_id,@temperature,@weight,@heart_rate,@pulse, @doc_id,@visitId)"
       );
 
     response
@@ -341,6 +343,29 @@ const addConsultation = async (request, response) => {
     response
       .status(500)
       .json({ successful: false, message: "Internal Server Error" });*/
+  }
+};
+
+const sendCenterRequest = async (request, response) => {
+  const { body } = request;
+  const {
+    patientNationalId,
+    patientVisitId,
+    requestingHospitalId,
+    requestingDoctorName,
+  } = body;
+
+  try {
+    let pool = await sql.connect(config);
+    let info = await pool
+      .request()
+      .input("visitId", sql.NVarChar, body.patientVisitId)
+      .query(
+        "SELECT consultation.*, patient.nID, patient.name, patient.sex,patient.dob,patient.contact, patient.marital_status,patient.email FROM consultation JOIN patient ON consultation.patient_id = patient.id WHERE consultation.visitId = @visitId"
+      );
+    return info.recordset;
+  } catch (error) {
+    console.log(error);
   }
 };
 
@@ -430,6 +455,35 @@ const logs = async (request, response) => {
       .json({ successful: false, message: "Internal server error" });
   }
 };
+
+const docUpdateConsult = async (request, response) => {
+  try {
+    const { params, body } = request;
+    const { id } = params;
+    const { notes, diagnostics, medication, status, laboratory } = body;
+
+    let pool = await sql.connect(config);
+    let update = await pool
+      .request()
+      .input("notes", sql.NVarChar, body.notes)
+      .input("diagnos", sql.NVarChar, body.diagnostics)
+      .input("medication", sql.NVarChar, body.medication)
+      .input("status", sql.NVarChar, body.status)
+      .input("laboratory", sql.NVarChar, body.laboratory)
+      .input("id", sql.Int, id)
+      .query(
+        "UPDATE consultation SET notes = @notes, diagnose = @diagnos, medication = @medication, laboratory = @laboratory WHERE id = @id"
+      );
+    if (update.rowsAffected[0] > 0) {
+      response
+        .status(200)
+        .json({ successful: true, message: "Remarks received" });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 module.exports = {
   getEmployees: getEmployees,
   getTypes: getTypes,
@@ -451,4 +505,6 @@ module.exports = {
   deletePat: deletePat,
   getConsultationsfordoctor: getConsultationsfordoctor,
   getDiagnostics: getDiagnostics,
+  sendCenterRequest: sendCenterRequest,
+  docUpdateConsult: docUpdateConsult,
 };

@@ -83,6 +83,10 @@ router.route("/updatepatient/:id").put((request, response) => {
   db.updatePatient(request, response);
 });
 
+router.route("/docupdateonp/:id").put((request, response) => {
+  db.docUpdateConsult(request, response);
+});
+
 router.route("/doctors").get((request, response) => {
   db.getDoctors().then((result) => {
     response.json(result);
@@ -113,6 +117,46 @@ router.route("/insertEmp").post((request, response) => {
 
 router.route("/deleteEmp/:id").delete((request, response) => {
   db.deleteEmp(request, response);
+});
+
+router.route("/center/patientrequest").get((request, response) => {
+  db.sendCenterRequest(request, response).then((result) => {
+    response.json({
+      data: {
+        hospital: {
+          name: "Mrinona Hospital",
+          doctorName: result[0].doctor_assigned,
+          visitId: result[0].visitId,
+          visitDate: new Date(result[0].date).toISOString().split("T")[0],
+        },
+        personalInfo: {
+          nationalId: result[0].nID,
+          name: result[0].patient_name,
+          dateOfBirth: result[0].dob,
+          gender: result[0].sex,
+          phoneNumber: result[0].contact,
+          maritalStatus: result[0].marital_status,
+          emailAddress: result[0].email,
+        },
+        vitals: {
+          height: result[0].height,
+          weight: result[0].weight,
+          bloodPressure: result[0].heart_rate,
+          temperature: result[0].temperature,
+        },
+        diagnostics: {
+          name: result[0].diagnose,
+          notes: [result[0].notes],
+        },
+        prescription: {
+          drugs: [{ name: "All", dossage: result[0].medication }],
+        },
+        lab: {
+          test: [{ name: "All", result: result[0].laboratory }],
+        },
+      },
+    });
+  });
 });
 
 router.route("/deletePat/:id").delete((request, response) => {
