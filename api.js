@@ -119,7 +119,7 @@ router.route("/deleteEmp/:id").delete((request, response) => {
   db.deleteEmp(request, response);
 });
 
-router.route("/center/patientrequest").get((request, response) => {
+router.route("/center/patientrequest").post((request, response) => {
   db.sendCenterRequest(request, response).then((result) => {
     response.json({
       data: {
