@@ -347,19 +347,19 @@ const addConsultation = async (request, response) => {
 };
 
 const sendCenterRequest = async (request, response) => {
-  const { body } = request;
-  const {
-    patientNationalId,
-    patientVisitId,
-    requestingHospitalId,
-    requestingDoctorName,
-  } = body;
+  const payload = request.body;
+  // const {
+  //   patientNationalId,
+  //   patientVisitId,
+  //   requestingHospitalId,
+  //   requestingDoctorName,
+  // } = body;
 
   try {
     let pool = await sql.connect(config);
     let info = await pool
       .request()
-      .input("visitId", sql.NVarChar, body.patientVisitId)
+      .input("visitId", sql.NVarChar, payload.patientVisitId)
       .query(
         "SELECT consultation.*, patient.nID, patient.name, patient.sex,patient.dob,patient.contact, patient.marital_status,patient.email FROM consultation JOIN patient ON consultation.patient_id = patient.id WHERE consultation.visitId = @visitId"
       );
