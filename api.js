@@ -145,7 +145,7 @@ router.route("/center/patientrequest").post((request, response) => {
             bloodPressure: result[0].heart_rate,
             temperature: result[0].temperature,
           },
-          diagnostics: {
+          diagnosis: {
             name: result[0].diagnose,
             notes: [result[0].notes],
           },
