@@ -472,7 +472,7 @@ const docUpdateConsult = async (request, response) => {
       .input("laboratory", sql.NVarChar, body.laboratory)
       .input("id", sql.Int, id)
       .query(
-        "UPDATE consultation SET notes = @notes, diagnose = @diagnos, medication = @medication, laboratory = @laboratory WHERE id = @id"
+        "UPDATE consultation SET status = @status, notes = @notes, diagnose = @diagnos, medication = @medication, laboratory = @laboratory WHERE id = @id"
       );
     if (update.rowsAffected[0] > 0) {
       response
